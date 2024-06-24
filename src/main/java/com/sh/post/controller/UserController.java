@@ -10,6 +10,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequiredArgsConstructor
@@ -41,5 +42,15 @@ public class UserController {
                 .toUri();
 
         return ResponseEntity.created(location).build();
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<Objects> deleteUser(@PathVariable int id) {
+        User user = userDaoService.deleteById(id);
+
+        if (user == null) {
+            throw new UserNotFoundException(String.format("Id[%s] not found", id));
+        }
+        return  ResponseEntity.noContent().build();
     }
 }
