@@ -9,7 +9,7 @@ import java.util.List;
 
 @Component // Dao와 Service가 혼합된 형태의 bean을 만드는게 맞나?
 public class UserDaoService {
-    private static List<User> users = new ArrayList<>();
+    private final static List<User> users = new ArrayList<>();
     private static int userCount = 3; // 전체 사용자수
 
     static {
