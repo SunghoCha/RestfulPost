@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -44,6 +45,30 @@ public class AdminUserController {
         MappingJacksonValue mapping = new MappingJacksonValue(adminUser);
         mapping.setFilters(filters);
         return mapping;
+    }
+
+    // /admin/users
+    @GetMapping("/users")
+    public MappingJacksonValue retrieveAllUsers4Admin() {
+        List<User> users = userDaoService.findAll();
+
+        List<AdminUser> adminUsers = new ArrayList<>();
+        AdminUser adminUser = null;
+        for (User user : users) {
+            adminUser = new AdminUser();
+            BeanUtils.copyProperties(user, adminUser);
+            adminUsers.add(adminUser);
+        }
+
+        SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter
+                .filterOutAllExcept("id", "name", "joinData", "ssn");
+
+        SimpleFilterProvider filters = new SimpleFilterProvider().addFilter("UserInfo", filter);
+
+        MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(adminUsers);
+        mappingJacksonValue.setFilters(filters);
+
+        return mappingJacksonValue;
     }
 
 }
