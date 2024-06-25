@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.sh.post.bean.AdminUser;
+import com.sh.post.bean.AdminUserV2;
 import com.sh.post.bean.User;
 import com.sh.post.dao.UserDaoService;
 import com.sh.post.exception.UserNotFoundException;
@@ -28,7 +29,7 @@ public class AdminUserController {
 
     // /admin/users/{id}
     // /admin/users
-    @GetMapping("/users/{id}")
+    @GetMapping("/v1/users/{id}")
     public MappingJacksonValue retrieveUser4Admin(@PathVariable int id) {
         User user = userDaoService.findOne(id);
 
@@ -66,6 +67,28 @@ public class AdminUserController {
         SimpleFilterProvider filters = new SimpleFilterProvider().addFilter("UserInfo", filter);
 
         MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(adminUsers);
+        mappingJacksonValue.setFilters(filters);
+
+        return mappingJacksonValue;
+    }
+
+    // -> /admin/v2/users/{id}
+    @GetMapping("/v2/users/{id}")
+    public MappingJacksonValue retrieveUuser4AdminV2(@PathVariable int id) {
+        User user = userDaoService.findOne(id);
+
+        AdminUserV2 adminUser = new AdminUserV2();
+        if (user == null) {
+            throw new UserNotFoundException(String.format("ID[%s] not found", id));
+        } else {
+            BeanUtils.copyProperties(user, adminUser);
+            adminUser.setGrade("VIP");
+        }
+
+        SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "joinDate", "ssn", "grade");
+        SimpleFilterProvider filters = new SimpleFilterProvider().addFilter("UserInfoV2", filter);
+
+        MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(adminUser);
         mappingJacksonValue.setFilters(filters);
 
         return mappingJacksonValue;
