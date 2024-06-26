@@ -64,13 +64,13 @@ public class UserJPAController {
     public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
         User savedUser = userRepository.save(user);
 
-        // 현재 요청 기반 URI 구성 
+        // 현재 요청 기반 URI 구성 (1번 방법)
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(savedUser.getId())
                 .toUri();
 
-        // WebMvcLinkBuilder를 이용한 URI 구성
+        // WebMvcLinkBuilder를 이용한 URI 구성 (2번 방법) 간단하게 uri만 반환하는 경우 1번이 나을수 있더라도 성능상에 큰 차이가 없다면 오히려 2번으로 통일하는게 낫지 않을까?
         URI uri = linkTo(methodOn(this.getClass()).retrieveUserById(savedUser.getId())).toUri();
         return ResponseEntity.created(uri).build();
     }
