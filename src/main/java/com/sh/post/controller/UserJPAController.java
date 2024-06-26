@@ -1,5 +1,6 @@
 package com.sh.post.controller;
 
+import com.sh.post.bean.Post;
 import com.sh.post.bean.User;
 import com.sh.post.dao.UserDaoService;
 import com.sh.post.exception.UserNotFoundException;
@@ -73,5 +74,15 @@ public class UserJPAController {
         // WebMvcLinkBuilder를 이용한 URI 구성 (2번 방법) 간단하게 uri만 반환하는 경우 1번이 나을수 있더라도 성능상에 큰 차이가 없다면 오히려 2번으로 통일하는게 낫지 않을까?
         URI uri = linkTo(methodOn(this.getClass()).retrieveUserById(savedUser.getId())).toUri();
         return ResponseEntity.created(uri).build();
+    }
+
+    @GetMapping("/users/{id}/posts")
+    public List<Post> retrieveAllPostsByUser(@PathVariable int id) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isEmpty()) {
+            throw new UserNotFoundException("id -" + id);
+        }
+
+        return user.get().getPosts();
     }
 }
