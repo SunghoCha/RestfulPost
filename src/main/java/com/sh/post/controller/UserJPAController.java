@@ -4,6 +4,7 @@ import com.sh.post.bean.Post;
 import com.sh.post.bean.User;
 import com.sh.post.dao.UserDaoService;
 import com.sh.post.exception.UserNotFoundException;
+import com.sh.post.repository.PostRepository;
 import com.sh.post.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/jpa")
 @RequiredArgsConstructor
 public class UserJPAController {
+
     private final UserRepository userRepository;
+    private final PostRepository postRepository;
 
     // /jpa/users
     @GetMapping("/users")
@@ -82,7 +85,31 @@ public class UserJPAController {
         if (user.isEmpty()) {
             throw new UserNotFoundException("id -" + id);
         }
-
         return user.get().getPosts();
     }
+
+    @PostMapping("/users/{id}/posts")
+    public ResponseEntity createPost(@PathVariable int id, @RequestBody Post post) {
+        Optional<User> userOptional = userRepository.findById(id);
+        if (userOptional.isEmpty()) {
+            throw new UserNotFoundException("id=" + id);
+        }
+        User user = userOptional.get(); // Service단에서 실행되는게 더 좋아보이는 로직
+        post.setUser(user); // 
+        /*
+            연관관계 편의 메서드로 user에도 add post 필요하지 않나? 
+            그러면 실제로 할 때 PostCreateRequest 객체로 받아와서 service로 넘기면 service가 post(dto to entity)로 변환할텐데
+            이 때 연관관계 편의메서드가 변환 메서드 내부에서 쓰이는 형식이 되는건가?
+            builder 패턴이 아닌 다른 방식이 강제되나? 나중에 확인 필요
+         */
+        postRepository.save(post);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(post.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).build();
+    }
+
 }
